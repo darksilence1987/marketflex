@@ -3,7 +3,6 @@ package org.xhite.marketflex.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Locale.Category;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

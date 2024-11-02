@@ -39,7 +39,7 @@ public class AppUser {
     private String email;
 
     @Column(nullable = false)
-    @Size(min = 60, max = 60) // For BCrypt encoded passwords
+    @Size(min = 16, max = 60) // For BCrypt encoded passwords
     private String password;
 
     @Column(nullable = false)
