@@ -63,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = new Product();
         updateProductFromDto(product, productDto, category);
+        product.setActive(true);
 
         Product savedProduct = productRepository.save(product);
         log.info("Created new product with ID: {}", savedProduct.getId());
@@ -77,12 +78,12 @@ public class ProductServiceImpl implements ProductService {
 
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-
+        boolean active = existingProduct.isActive();
         Category category = categoryRepository.findById(productDto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + productDto.getCategoryId()));
 
         updateProductFromDto(existingProduct, productDto, category);
-
+        existingProduct.setActive(active);
         Product updatedProduct = productRepository.save(existingProduct);
         log.info("Updated product: {}", updatedProduct.getName());
 

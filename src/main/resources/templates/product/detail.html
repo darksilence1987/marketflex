@@ -79,7 +79,7 @@
                     <button
                       type="submit"
                       class="btn btn-danger"
-                      onclick="return confirm('Are you sure you want to delete this product?');"
+                      th:onclick="'deleteProduct(' + ${product.id} + ')'"
                     >
                       Delete
                     </button>
@@ -190,6 +190,44 @@
             toast.show();
             console.error("Error:", error);
           });
+      }
+      function deleteProduct(productId) {
+        if (!productId) {
+          console.error('Product ID is required');
+          return;
+        }
+
+        if (confirm("Are you sure you want to delete this product?")) {
+          const token = document.querySelector('meta[name="_csrf"]').content;
+          const header = document.querySelector('meta[name="_csrf_header"]').content;
+          // Fix URL construction by ensuring productId is appended correctly
+          const baseUrl = /*[[@{/products}]]*/ "/products";
+          const url = `${baseUrl}/${productId}`;
+          
+          console.log('Sending DELETE request to:', url); // Debug log
+
+          fetch(url, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+              [header]: token
+            },
+          })
+          .then(response => {
+            if (response.ok) {
+              window.location.reload();
+            } else {
+              response.text().then(text => {
+                console.error('Server response:', text);
+                alert(`Error deleting product: ${text || 'Unknown error'}`);
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Delete request failed:', error);
+            alert(`Failed to delete product: ${error.message}`);
+          });
+        }
       }
     </script>
   </body>
