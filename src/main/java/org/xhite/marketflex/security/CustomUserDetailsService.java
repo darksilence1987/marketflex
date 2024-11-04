@@ -47,4 +47,13 @@ public class CustomUserDetailsService implements UserDetailsService {
             .accountLocked(!user.isAccountNonLocked())
             .build();
     }
+
+    public AppUser getUserByEmail(String username) {
+        return userRepository.findByEmail(username)
+            .orElseThrow(() -> {
+                log.error("User not found with email: {}", username);
+                return new UsernameNotFoundException("User not found with email: " + username);
+            });
+
+    }
 }
