@@ -1,1 +1,0 @@
-productDto.setImageUrl("/uploads/" + filename);
