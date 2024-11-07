@@ -1,0 +1,23 @@
+@PostMapping("/products/create")
+public String createProduct(@RequestParam("image") MultipartFile image, Model model) {
+    if (image.isEmpty()) {
+        // Handle empty file upload
+        return "product/form";
+    }
+
+    try {
+        String filename = storageService.store(image);
+        if (filename == null || filename.trim().isEmpty()) {
+            // Handle invalid or empty filename
+            return "product/form";
+        }
+        productDto.setImageUrl("/uploads/" + java.nio.file.Paths.get(filename).normalize().toString());
+    } catch (Exception e) {
+        // Handle file upload exception
+        model.addAttribute("error", "Error uploading image");
+        return "product/form";
+    }
+
+    productService.createProduct(productDto);
+    return "redirect:/products";
+}
