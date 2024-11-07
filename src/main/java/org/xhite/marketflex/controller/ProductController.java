@@ -63,7 +63,7 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping
     public String createProduct(@Valid @ModelAttribute("product") ProductDto productDto, 
-                                @RequestParam("imageFile") MultipartFile imageFile,
+                              @RequestParam("imageFile") MultipartFile imageFile,
                               BindingResult result, 
                               Model model) {
         if (result.hasErrors()) {
@@ -72,7 +72,7 @@ public class ProductController {
         }
         if (!imageFile.isEmpty()) {
             String filename = storageService.store(imageFile);
-            productDto.setImageUrl("/uploads/" + filename);
+            productDto.setImageUrl("/uploads/" + filename); 
         }
         productService.createProduct(productDto);
         return "redirect:/products";
@@ -92,12 +92,22 @@ public class ProductController {
     @PostMapping("/{id}")
     public String updateProduct(@PathVariable("id") Long id, 
                               @Valid @ModelAttribute("product") ProductDto productDto,
+                              @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
                               BindingResult result,
                               Model model) {
         if (result.hasErrors()) {
             model.addAttribute("categories", categoryService.getAllCategories());
             return "product/form";
         }
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String filename = storageService.store(imageFile);
+            productDto.setImageUrl("/uploads/" + filename);
+        } else if (productDto.getImageUrl() == null || productDto.getImageUrl().trim().isEmpty()) {
+            // If no new image and no existing image, use a default image
+            productDto.setImageUrl("/images/default-product.jpg");
+        }
+
         productService.updateProduct(id, productDto);
         return "redirect:/products";
     }

@@ -27,7 +27,7 @@ public class SecurityConfig {
             .sessionManagement(session -> 
                 session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/", "/home", "/login", "/register").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**", "/", "/home", "/login", "/register").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

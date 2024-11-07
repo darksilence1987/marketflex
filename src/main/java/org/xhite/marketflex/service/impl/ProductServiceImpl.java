@@ -142,7 +142,9 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(dto.getPrice());
         product.setStockQuantity(dto.getStockQuantity());
         product.setCategory(category);
-        product.setImageUrl(dto.getImageUrl());
+        if (dto.getImageUrl() != null && !dto.getImageUrl().isEmpty()) {
+            product.setImageUrl(dto.getImageUrl());
+        }
         product.setActive(dto.isActive());
     }
 
