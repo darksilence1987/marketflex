@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.xhite.marketflex.dto.ProductDto;
 import org.xhite.marketflex.service.CategoryService;
+import org.xhite.marketflex.service.FileStorageService;
 import org.xhite.marketflex.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -29,7 +31,8 @@ public class ProductController {
     private static final String PRODUCT_ATTRIBUTE = "product";
     private final ProductService productService;
     private final CategoryService categoryService;
-    
+    private final FileStorageService storageService;
+
     @GetMapping
     public String listProducts(@RequestParam(required = false) Long category, Model model) {
         List<ProductDto> products;
@@ -60,11 +63,16 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping
     public String createProduct(@Valid @ModelAttribute("product") ProductDto productDto, 
+                                @RequestParam("imageFile") MultipartFile imageFile,
                               BindingResult result, 
                               Model model) {
         if (result.hasErrors()) {
             model.addAttribute("categories", categoryService.getAllCategories());
             return "product/form";
+        }
+        if (!imageFile.isEmpty()) {
+            String filename = storageService.store(imageFile);
+            productDto.setImageUrl("/uploads/" + filename);
         }
         productService.createProduct(productDto);
         return "redirect:/products";
