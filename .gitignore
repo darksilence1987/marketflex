@@ -36,3 +36,5 @@ out/
 ### VS Code ###
 .vscode/
 .github/copilot-instructions.md
+.aider*
+.env
