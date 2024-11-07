@@ -1,0 +1,1 @@
+productDto.setImageUrl("/uploads/" + java.nio.file.Paths.get(filename).normalize().toString());

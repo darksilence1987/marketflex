@@ -1,0 +1,5 @@
+if (!imageFile.isEmpty() && !filename.trim().isEmpty()) {
+    productDto.setImageUrl("/uploads/" + java.nio.file.Paths.get(filename).normalize().toString());
+} else {
+    // handle the case where image file is empty or name is invalid
+}
