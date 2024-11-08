@@ -70,6 +70,41 @@ public class DataLoader implements CommandLineRunner {
 
         productRepository.saveAll(Arrays.asList(smartphone, tshirt));
 
+        // Create a few more products
+        Product laptop = new Product();
+        laptop.setName("Laptop");
+        laptop.setDescription("High performance laptop for work and gaming");
+        laptop.setPrice(new BigDecimal("1299.99"));
+        laptop.setStockQuantity(50);
+        laptop.setCategory(electronics);
+        laptop.setImageUrl("/images/products/laptop.jpg");
+
+        Product jeans = new Product();
+        jeans.setName("Jeans");
+        jeans.setDescription("Stylish denim jeans");
+        jeans.setPrice(new BigDecimal("39.99"));
+        jeans.setStockQuantity(150);
+        jeans.setCategory(fashion);
+        jeans.setImageUrl("/images/products/jeans.jpg");
+
+        Product headphones = new Product();
+        headphones.setName("Headphones");
+        headphones.setDescription("Wireless headphones with noise cancellation");
+        headphones.setPrice(new BigDecimal("99.99"));
+        headphones.setStockQuantity(100);
+        headphones.setCategory(electronics);
+        headphones.setImageUrl("/images/products/headphones.jpg");
+
+        Product dress = new Product();
+        dress.setName("Dress");
+        dress.setDescription("Elegant evening dress");
+        dress.setPrice(new BigDecimal("59.99"));
+        dress.setStockQuantity(100);
+        dress.setCategory(fashion);
+        dress.setImageUrl("/images/products/dress.jpg");
+
+        productRepository.saveAll(Arrays.asList(laptop, jeans, headphones, dress));
+
     }
 
     private void createAdminUser() {

@@ -20,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -43,7 +44,7 @@ public class AppUser {
     private String email;
 
     @Column(nullable = false)
-    @Size(min = 16, max = 60) // For BCrypt encoded passwords
+    @Size(min = 16, max = 60)
     private String password;
 
     @Column(nullable = false)
@@ -53,6 +54,9 @@ public class AppUser {
     @Column(nullable = false)
     @Size(min = 2, max = 50)
     private String lastName;
+
+    @Version
+    private Long version;
 
     @Builder.Default
     @Column(nullable = false)
@@ -132,5 +136,10 @@ public class AppUser {
 
     public boolean isCustomer() {
         return hasRole(Role.CUSTOMER);
+    }
+
+    public boolean isCredentialsNonExpired() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'isCredentialsNonExpired'");
     }
 }

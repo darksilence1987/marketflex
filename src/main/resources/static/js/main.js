@@ -11,3 +11,10 @@ document.addEventListener("DOMContentLoaded", function () {
     new bootstrap.Tooltip(tooltip);
   });
 });
+
+function updateCartBadge(count) {
+    const badge = document.querySelector('.badge-danger');
+    if (badge) {
+        badge.textContent = count;
+    }
+}

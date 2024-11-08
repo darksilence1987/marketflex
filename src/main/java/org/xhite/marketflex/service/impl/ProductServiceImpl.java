@@ -148,7 +148,8 @@ public class ProductServiceImpl implements ProductService {
         product.setActive(dto.isActive());
     }
 
-    private ProductDto convertToDto(Product product) {
+    @Override
+    public ProductDto convertToDto(Product product) {
         return ProductDto.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -161,4 +162,40 @@ public class ProductServiceImpl implements ProductService {
                 .active(product.isActive())
                 .build();
     }
+
+    @Override
+    public Product convertToEntity(ProductDto productDto) {
+        Product product = new Product();
+        product.setId(productDto.getId());
+        product.setName(productDto.getName());
+        product.setDescription(productDto.getDescription());
+        product.setPrice(productDto.getPrice());
+        product.setStockQuantity(productDto.getStockQuantity());
+        product.setActive(productDto.isActive());
+        return product;
+    }
+
+    @Override
+    public boolean isProductAvailable(Long productId, Integer quantity) {
+        return productRepository.findByIdAndActiveTrue(productId)
+                .map(product -> product.getStockQuantity() >= quantity)
+                .orElse(false);
+    }
+
+    @Override
+    public void updateStock(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+
+        int newStock = product.getStockQuantity() - quantity;
+        if (newStock < 0) {
+            throw new IllegalStateException("Insufficient stock for product: " + product.getName());
+        }
+
+        product.setStockQuantity(newStock);
+        product.setUpdatedAt(LocalDateTime.now());
+        productRepository.save(product);
+        log.info("Updated stock for product: {}, new stock: {}", product.getName(), newStock);
+    }
+
 }

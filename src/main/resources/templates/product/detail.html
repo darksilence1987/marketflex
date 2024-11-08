@@ -158,38 +158,32 @@
     <script th:inline="javascript">
       function addToCart(productId) {
         const token = document.querySelector('meta[name="_csrf"]').content;
-        const header = document.querySelector(
-          'meta[name="_csrf_header"]'
-        ).content;
-
-        fetch(`/api/cart/add/${productId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            [header]: token,
-          },
+        const header = document.querySelector('meta[name="_csrf_header"]').content;
+        
+        fetch(`/cart/add/${productId}`, {
+            method: "POST",
+            headers: {
+                [header]: token
+            },
+            credentials: 'same-origin'
         })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              const toast = new bootstrap.Toast(
-                document.getElementById("successToast")
-              );
-              document.getElementById("toastMessage").textContent =
-                "Product added to cart successfully";
-              toast.show();
-            } else {
-              throw new Error(data.message || "Failed to add product to cart");
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => Promise.reject(data));
             }
-          })
-          .catch((error) => {
-            const toast = new bootstrap.Toast(
-              document.getElementById("errorToast")
-            );
-            document.getElementById("errorMessage").textContent = error.message;
+            return response.json();
+        })
+        .then(data => {
+            const toast = new bootstrap.Toast(document.getElementById("successToast"));
+            document.getElementById("toastMessage").textContent = "Product added to cart successfully";
             toast.show();
-            console.error("Error:", error);
-          });
+            updateCartBadge(data.cart.totalItems); // Add this function
+        })
+        .catch(error => {
+            const toast = new bootstrap.Toast(document.getElementById("errorToast"));
+            document.getElementById("errorMessage").textContent = error.message || "Failed to add product to cart";
+            toast.show();
+        });
       }
       function deleteProduct(productId) {
         if (!productId) {
@@ -200,7 +194,6 @@
         if (confirm("Are you sure you want to delete this product?")) {
           const token = document.querySelector('meta[name="_csrf"]').content;
           const header = document.querySelector('meta[name="_csrf_header"]').content;
-          // Fix URL construction by ensuring productId is appended correctly
           const baseUrl = /*[[@{/products}]]*/ "/products";
           const url = `${baseUrl}/${productId}`;
           

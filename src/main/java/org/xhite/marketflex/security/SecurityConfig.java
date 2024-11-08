@@ -25,13 +25,16 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .sessionManagement(session -> 
-                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .maximumSessions(1)
+                .expiredUrl("/login?expired"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**", "/", "/home", "/login", "/register").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/manager/**").hasAnyRole("MANAGER", "ADMIN")
+                .requestMatchers("/cart/**").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -41,10 +44,15 @@ public class SecurityConfig {
                 .failureUrl("/login?error=true")
                 .permitAll()
             )
+            .rememberMe(remember -> remember
+                .key("uniqueAndSecureKey")
+                .tokenValiditySeconds(86400))
             .logout(logout -> logout
                 .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout=true")
+                .logoutSuccessUrl("/login?logout")
                 .deleteCookies("JSESSIONID")
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
                 .permitAll()
             );
         
