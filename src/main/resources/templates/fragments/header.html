@@ -30,10 +30,10 @@
                             Categories
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-                            <li th:if="${#lists.isEmpty(categories)}">
+                            <li th:if="${#lists.isEmpty(layoutCategories)}">
                                 <span class="dropdown-item">No categories available</span>
                             </li>
-                            <li th:each="category : ${categories}">
+                            <li th:each="category : ${layoutCategories}">
                                 <a class="dropdown-item" th:href="@{/products(category=${category.id})}" 
                                    th:text="${category.name}"></a>
                             </li>

@@ -7,7 +7,6 @@ import org.xhite.marketflex.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.xhite.marketflex.dto.CartDto;
-import org.xhite.marketflex.dto.CartItemDto;
 import org.xhite.marketflex.exception.InsufficientStockException;
 import org.xhite.marketflex.exception.ResourceNotFoundException;
 import org.xhite.marketflex.exception.AccessDeniedException;
@@ -15,7 +14,6 @@ import org.xhite.marketflex.model.AppUser;
 import org.xhite.marketflex.model.Cart;
 import org.xhite.marketflex.model.CartItem;
 import org.xhite.marketflex.model.Product;
-import org.xhite.marketflex.dto.ProductDto;
 import org.xhite.marketflex.repository.CartItemRepository;
 import org.xhite.marketflex.repository.CartRepository;
 import org.xhite.marketflex.service.CartService;
@@ -23,10 +21,8 @@ import org.xhite.marketflex.service.ProductService;
 import org.xhite.marketflex.service.UserService;
 import org.xhite.marketflex.event.CartItemAddedEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.xhite.marketflex.mapper.CartMapper;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.math.BigDecimal;
 
 
 @Service
@@ -40,6 +36,7 @@ public class CartServiceImpl implements CartService {
     private final UserService userService;
     private final ProductRepository productRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final CartMapper cartMapper; // Add this
 
     @Override
     @Transactional
@@ -76,50 +73,20 @@ public class CartServiceImpl implements CartService {
             // Publish event after successful save
             applicationEventPublisher.publishEvent(new CartItemAddedEvent(productId, quantity));
             
-            return mapToDto(cart);
+            return cartMapper.toDto(cart); // Use mapper here
         } catch (Exception e) {
             log.error("Error adding product to cart: {}", e.getMessage());
             throw e;
         }
     }
-        
-            private CartDto mapToDto(Cart cart) {
-                if (cart == null) return new CartDto();
-                
-                List<CartItemDto> cartItems = cart.getCartItems().stream()
-                    .map(item -> CartItemDto.builder()
-                        .id(item.getId())
-                        .product(productService.convertToDto(item.getProduct()))
-                        .quantity(item.getQuantity())
-                        .subtotal(item.getProduct().getPrice()
-                            .multiply(BigDecimal.valueOf(item.getQuantity())))
-                        .build())
-                    .collect(Collectors.toList());
-                
-                BigDecimal totalPrice = cartItems.stream()
-                    .map(CartItemDto::getSubtotal)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-                
-                return CartDto.builder()
-                    .id(cart.getId())
-                    .cartItems(cartItems)
-                    .totalPrice(totalPrice)
-                    .totalItems(cartItems.size())
-                    .build();
-            }
-        
-            private Cart createNewCart(AppUser user) {
-        Cart cart = new Cart();
-        cart.setUser(user);
-        return cartRepository.save(cart);
-    }
 
-    private CartItem createNewCartItem(Cart cart, Product product) {
-        CartItem cartItem = new CartItem();
-        cartItem.setCart(cart);
-        cartItem.setProduct(product);
-        cartItem.setQuantity(0);
-        return cartItem;
+    @Override
+    public CartDto getCart() {
+        AppUser user = userService.getCurrentUser();
+        Cart cart = cartRepository.findByUser(user)
+                .orElseGet(() -> createNewCart(user));
+        
+        return cartMapper.toDto(cart); // Use mapper here
     }
 
     @Override
@@ -134,7 +101,7 @@ public class CartServiceImpl implements CartService {
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
         
-        return mapToDto(cartItem.getCart());
+        return cartMapper.toDto(cartItem.getCart()); // Use mapper here
     }
 
     @Override
@@ -162,20 +129,11 @@ public class CartServiceImpl implements CartService {
             
             log.debug("Successfully removed item {} from cart {}", itemId, cart.getId());
             
-            return mapToDto(cart);
+            return cartMapper.toDto(cart); // Use mapper here
         } catch (Exception e) {
             log.error("Error removing item from cart: {}", e.getMessage());
             throw e;
         }
-    }
-
-    @Override
-    public CartDto getCart() {
-        AppUser user = userService.getCurrentUser();
-        Cart cart = cartRepository.findByUser(user)
-                .orElseGet(() -> createNewCart(user));
-        
-        return mapToDto(cart);
     }
 
     @Override
@@ -185,6 +143,20 @@ public class CartServiceImpl implements CartService {
                 .orElseGet(() -> createNewCart(user));
         
         cartItemRepository.deleteAllByCart(cart);
+    }
+
+    private Cart createNewCart(AppUser user) {
+        Cart cart = new Cart();
+        cart.setUser(user);
+        return cartRepository.save(cart);
+    }
+
+    private CartItem createNewCartItem(Cart cart, Product product) {
+        CartItem cartItem = new CartItem();
+        cartItem.setCart(cart);
+        cartItem.setProduct(product);
+        cartItem.setQuantity(0);
+        return cartItem;
     }
 
 }

@@ -8,12 +8,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
     private static final Logger log = LoggerFactory.getLogger(WebConfig.class);
-    
+    private final GlobalModelInterceptor globalModelInterceptor;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         
@@ -37,5 +41,11 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(uploadUrl)
                 .setCachePeriod(3600)
                 .resourceChain(true);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(globalModelInterceptor)
+               .excludePathPatterns("/api/**", "/static/**", "/css/**", "/js/**");
     }
 }
