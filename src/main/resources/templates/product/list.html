@@ -65,6 +65,17 @@
                   th:alt="${product.name}"
                   style="height: 200px; object-fit: cover"
                 />
+                <div class="position-absolute top-0 end-0 m-2">
+                  <button sec:authorize="isAuthenticated()"
+                          th:if="${product.stockQuantity > 0}"
+                          class="btn btn-light btn-sm rounded-circle shadow-sm add-to-cart-btn"
+                          th:onclick="'quickAddToCart(' + ${product.id} + ', this)'"
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="left"
+                          title="Add to cart">
+                      <i class="bi bi-cart-plus"></i>
+                  </button>
+                </div>
                 <div class="card-body">
                   <h5 class="card-title" th:text="${product.name}">
                     Product Name
@@ -172,6 +183,79 @@
           });
         }
       }
+
+      function quickAddToCart(productId, button) {
+        if (!productId) {
+            console.error('Product ID is required');
+            return;
+        }
+
+        // Add loading state
+        button.classList.add('loading');
+        const originalIcon = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+
+        const token = document.querySelector('meta[name="_csrf"]').content;
+        const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+        fetch(`/cart/add/${productId}`, {
+            method: 'POST',
+            headers: {
+                [header]: token
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => Promise.reject(data));
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Success feedback
+            button.classList.remove('loading');
+            button.classList.add('success');
+            button.innerHTML = '<i class="bi bi-check2"></i>';
+            
+            // Update cart badge if exists
+            const cartBadge = document.querySelector('.cart-badge');
+            if (cartBadge && data.cart) {
+                cartBadge.textContent = data.cart.totalItems;
+            }
+
+            // Reset button after animation
+            setTimeout(() => {
+                button.classList.remove('success');
+                button.innerHTML = originalIcon;
+            }, 1500);
+        })
+        .catch(error => {
+            // Error feedback
+            button.classList.remove('loading');
+            button.classList.add('error');
+            button.innerHTML = '<i class="bi bi-x"></i>';
+            
+            console.error('Error:', error);
+            
+            // Show toast or alert
+            const errorMessage = error.message || 'Failed to add product to cart';
+            alert(errorMessage);
+
+            // Reset button after animation
+            setTimeout(() => {
+                button.classList.remove('error');
+                button.innerHTML = originalIcon;
+            }, 1500);
+        });
+      }
+
+      // Initialize tooltips
+      document.addEventListener('DOMContentLoaded', function() {
+          const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+          tooltipTriggerList.map(function(tooltipTriggerEl) {
+              return new bootstrap.Tooltip(tooltipTriggerEl);
+          });
+      });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>

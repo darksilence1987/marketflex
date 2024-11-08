@@ -6,6 +6,8 @@
 .card {
   transition: transform 0.2s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
 }
 
 .card:hover {
@@ -19,4 +21,34 @@
 .footer a:hover {
   color: #0dcaf0 !important;
   text-decoration: none;
+}
+
+.add-to-cart-btn {
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-to-cart-btn:hover {
+    transform: scale(1.1);
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.add-to-cart-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.add-to-cart-btn.success {
+    background-color: var(--bs-success);
+    color: white;
+}
+
+.add-to-cart-btn.error {
+    background-color: var(--bs-danger);
+    color: white;
 }
