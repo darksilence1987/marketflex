@@ -11,5 +11,6 @@ public interface CategoryService {
     CategoryDto createCategory(CreateCategoryRequest request);
     CategoryDto updateCategory(Long id, CreateCategoryRequest request);
     void deleteCategory(Long id);
+    void deleteCategory(Long id, boolean force);
     List<CategoryDto> getFeaturedCategories(int limit);
 }

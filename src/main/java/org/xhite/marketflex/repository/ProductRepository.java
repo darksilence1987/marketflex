@@ -22,4 +22,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     
     @Query(value = "SELECT * FROM products WHERE active = true ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
     List<Product> findRandomProducts(int limit);
+
+    @Query("SELECT p FROM Product p WHERE p.active = true AND p.stockQuantity > 0 AND p.category.id = :categoryId")
+    List<Product> findAvailableProductsByCategoryId(Long categoryId);
 }

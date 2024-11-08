@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.xhite.marketflex.dto.ProductDto;
 import org.xhite.marketflex.exception.ResourceNotFoundException;
+import org.xhite.marketflex.mapper.ProductMapper;
 import org.xhite.marketflex.model.Category;
 import org.xhite.marketflex.model.Product;
 import org.xhite.marketflex.repository.CategoryRepository;
@@ -27,23 +28,24 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductMapper productMapper;
 
     @Override
     @Transactional(readOnly = true)
     public List<ProductDto> getAllProducts() {
-        return productRepository.findByActiveTrueOrderByCreatedAtDesc()
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        List<Product> products = productRepository.findAvailableProducts();
+        return products.stream()
+            .map(productMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProductDto> getProductsByCategory(Long categoryId) {
-        return productRepository.findByCategoryIdAndActiveTrue(categoryId)
-                .stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        List<Product> products = productRepository.findAvailableProductsByCategoryId(categoryId);
+        return products.stream()
+            .map(productMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     @Override

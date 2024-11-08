@@ -22,10 +22,12 @@ import org.xhite.marketflex.service.ProductService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/products")
 @RequiredArgsConstructor
+@Slf4j
 public class ProductController {
 
     private static final String PRODUCT_ATTRIBUTE = "product";
@@ -35,19 +37,23 @@ public class ProductController {
 
     @GetMapping
     public String listProducts(@RequestParam(required = false) Long category, Model model) {
-        List<ProductDto> products;
-        if (category != null) {
-            products = productService.getProductsByCategory(category);
-        } else {
-            products = productService.getAllProducts();
-        }
+        List<ProductDto> products = (category != null) ?
+            productService.getProductsByCategory(category) :
+            productService.getAllProducts();
+
+        // Log each product's image URL
+        products.forEach(product -> 
+            System.out.println("Product: " + product.getName() + ", Image URL: " + product.getImageUrl())
+        );
+
         model.addAttribute("products", products);
         model.addAttribute("categories", categoryService.getAllCategories());
         return "product/list";
     }
     @GetMapping("/{id}")
-    public String getProduct(@PathVariable Long id, Model model) {
-        productService.getProductById(id).ifPresent(product -> model.addAttribute(PRODUCT_ATTRIBUTE, product));
+    public String getProductDetail(@PathVariable Long id, Model model) {
+        ProductDto product = productService.getProductById(id).orElse(null);
+        model.addAttribute("product", product);
         return "product/detail";
     }
     
@@ -62,18 +68,20 @@ public class ProductController {
     
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping
-    public String createProduct(@Valid @ModelAttribute("product") ProductDto productDto, 
-                              @RequestParam("imageFile") MultipartFile imageFile,
-                              BindingResult result, 
+    public String createProduct(@Valid @ModelAttribute("product") ProductDto productDto,
+                              @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+                              BindingResult result,
                               Model model) {
         if (result.hasErrors()) {
             model.addAttribute("categories", categoryService.getAllCategories());
             return "product/form";
         }
-        if (!imageFile.isEmpty()) {
-            String filename = storageService.store(imageFile);
-            productDto.setImageUrl("/uploads/" + filename); 
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imageUrl = storageService.store(imageFile);
+            productDto.setImageUrl(imageUrl); // FileStorageService now returns complete URL
         }
+
         productService.createProduct(productDto);
         return "redirect:/products";
     }

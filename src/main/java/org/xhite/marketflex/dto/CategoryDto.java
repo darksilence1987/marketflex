@@ -14,5 +14,6 @@ public class CategoryDto {
     private String name;
     private String description;
     private String imageUrl;
-    private Integer productCount;
+    private boolean active;
+    private int products;
 }
